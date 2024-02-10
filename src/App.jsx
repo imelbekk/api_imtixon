@@ -12,7 +12,6 @@ import SingleAuthor from './features/Pages/Authors/SingleAuthor'
 export default function App() {
   return (
     <>
-    <h1>hello</h1>
       <Routes>
         <Route path='' element={<Auth/>}/>
         <Route path='/sign_up' element={<SignUp/>}/>
