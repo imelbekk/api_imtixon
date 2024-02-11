@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axiosCleint from "../../../plugins/AxiosCleint";
+import useAuthorsStore from "../../../store/authors";
 
 export default function AuthorsModal({ open, toggle,edit }) {
+  const {postAuthor} = useAuthorsStore()
+  const {updateAuthor} = useAuthorsStore()
   const [file, setFile] = useState("");
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -18,23 +21,11 @@ export default function AuthorsModal({ open, toggle,edit }) {
     formData.append("file", file);
 
     if(edit !== ''){
-        axiosCleint
-        .patch(`/author/${edit.id}`, {...payload})
-        .then((res)=>{
-            if(res.status === 200){
-                window.location.reload();
-            }
-        })
+      updateAuthor(edit,payload)
     }else{
         axiosCleint.post("/files/upload", formData).then((res) => {
           if (res.status === 201) {
-            axiosCleint
-              .post("/author", { ...payload, image: res?.data?.link })
-              .then((res) => {
-                if (res.status === 201) {
-                  window.location.reload();
-                }
-              });
+            postAuthor({...payload, image: res?.data})
           }
         });
     }

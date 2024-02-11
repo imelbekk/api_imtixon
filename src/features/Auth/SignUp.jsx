@@ -1,40 +1,34 @@
 import React from "react";
 import { useState } from "react";
-import axiosCleint from "../../plugins/AxiosCleint";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { Notifications } from "../../plugins/Notifications";
+import useAuthStore from "../../store/auth";
 
 
 export default function SignUp() {
   const [full_name, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const {register} = useAuthStore()
   const navigate = useNavigate()
-  const handleSubmit = (e) => {
+  const save = async (e) => {
     e.preventDefault();
-    axiosCleint
-      .post("/auth/signup", {
-        full_name,
-        username,
-        password,
-      })  
-      .then((res) => {
-        let url = res?.data?.token?.access_token;
-        localStorage.setItem("token", url);
-        if (res?.status === 201) {
-          setTimeout(()=>{
-          navigate("/sign_in");
-          }, 1000)
-          Notifications({text: "Success", type: 'success' })
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        Notifications({text: "Error", type: 'error' })
-      });
+    await register({
+      full_name,
+      username, 
+      password 
+    })
+    let token = localStorage.getItem("token")
+    if(token){
+      Notifications({text:'Success', type: 'success'})
+      setTimeout(() => {
+        navigate("/sign_in")
+      }, 1000);
+    }else{
+      Notifications({text: 'Password yoki Username xato', type: 'error'})
+    }
   };
   const active = Boolean(full_name) && Boolean(username) && Boolean(password)
   return (
@@ -43,7 +37,7 @@ export default function SignUp() {
       <h6 className="text-center font-[600] text-[30px] my-[30px] text-white">Sign Up</h6>
       <form
         className="flex flex-col px-[10%] gap-[40px]"
-        onSubmit={handleSubmit}
+        onSubmit={save}
       >
         <input
           type="text"

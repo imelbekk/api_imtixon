@@ -2,12 +2,15 @@ import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import axiosCleint from "../../../plugins/AxiosCleint";
-// import upload_img from '../../../images/add-square-svgrepo-com.png'
+import useBooksStore from "../../../store/books";
+
 
 export default function BooksModal({ open, toggle, edit }) {
   const [file, setFile] = useState("");
   const [authors, setAuthors] = useState([]);
   const [categories, setCategories] = useState([]);
+  const {updateBooks} = useBooksStore()
+  const {postBook} = useBooksStore()
   useEffect(() => {
     axiosCleint.get("/author").then((res) => {
       setAuthors(res?.data);
@@ -31,27 +34,14 @@ export default function BooksModal({ open, toggle, edit }) {
     formData.append("file", file);
 
     if(edit !== ''){
-        axiosCleint
-        .patch(`/book/${edit.id}`, {...payload})
-        .then((res)=>{
-            if(res.status === 200){
-                window.location.reload()
-            }
-        })
+      updateBooks(edit, payload)
     }else{
         axiosCleint.post("/files/upload", formData).then((res) => {
-          if (res.status === 201) {
-            axiosCleint
-              .post("/book/create", { ...payload, image: res.data.link })
-              .then((res) => {
-                if(res.status === 201){
-                    window.location.reload()
-                }
-              });
+          if (res?.status === 201) {
+            postBook({...payload, image: res?.data})
           }
         });
     }
-
   };
   return (
     <Modal isOpen={open} toggle={toggle}>

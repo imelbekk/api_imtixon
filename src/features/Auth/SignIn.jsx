@@ -6,33 +6,29 @@ import { Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { Notifications } from "../../plugins/Notifications";
+import useAuthStore from "../../store/auth";
 
 
 export default function SignIn() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const {login} = useAuthStore()
   const navigate = useNavigate();
-  let payload = {
-    username,
-    password,
-  };
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    axiosCleint
-      .post("/auth/signin",   { ...payload })
-      .then((res) => {
-        localStorage.setItem("token", res?.data?.tokens?.access_token);
-        if (res?.status === 201) {
-          setTimeout(()=>{
-            navigate("/books");
-          }, 1000)
-          Notifications({text: 'Success', type: 'success'})
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        Notifications({text: 'Error', type: 'error'})
-      });
+    await login ({
+      username,
+      password
+    })
+    let token = localStorage.getItem("token")
+    if(token){
+      Notifications({text:'Success', type: 'success'})
+      setTimeout(() => {
+        navigate("/books")
+      }, 1000);
+    }else{
+      Notifications({text: 'Password yoki Username xato', type: 'error'})
+    }
   };
   const active = Boolean(username) && Boolean(password)
   return (
